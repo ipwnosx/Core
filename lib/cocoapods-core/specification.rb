@@ -173,7 +173,11 @@ module Pod
     # @return [String] the root name
     #
     def self.root_name(full_name)
-      full_name.split('/', 2).first
+      if index = full_name.index('/')
+        full_name.slice(0, index)
+      else
+        full_name
+      end
     end
 
     # Returns the module name of a specification
@@ -327,6 +331,13 @@ module Pod
     def subspec_by_name(relative_name, raise_if_missing = true, include_non_library_specifications = false)
       if relative_name.nil? || relative_name == base_name
         self
+      elsif base_name.nil?
+        if raise_if_missing
+          raise Informative, "Trying to access a `#{relative_name}` " \
+          "specification from `#{defined_in_file}`, which has no contents."
+        else
+          return nil
+        end
       elsif relative_name.downcase == base_name.downcase
         raise Informative, "Trying to access a `#{relative_name}` " \
           "specification from `#{base_name}`, which has a different case."
@@ -745,7 +756,7 @@ module Pod
           end
         end
       when '.json'
-        spec = Specification.from_json(spec_contents)
+        spec = Specification.from_json(spec_contents, path)
       else
         raise Informative, "Unsupported specification format `#{path.extname}` for spec at `#{path}`."
       end

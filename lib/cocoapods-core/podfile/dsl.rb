@@ -195,7 +195,7 @@ module Pod
       # they are specified for a dependency match. This behaviour can be altered
       # for a specific dependency by specifying the source with the dependency:
       #
-      #     pod 'PonyDebugger', :source => 'https://github.com/CocoaPods/Specs.git'
+      #     pod 'PonyDebugger', :source => 'https://cdn.cocoapods.org/'
       #
       # In this case only the specified source will be searched for the dependency
       # and any global sources ignored.
@@ -455,6 +455,10 @@ module Pod
       # @option   options [String] :dependency_file
       #           specifies the dependency file to use for this script phase.
       #
+      # @option   options [String] :always_out_of_date
+      #           specifies whether or not this run script will be forced to
+      #           run even on incremental builds
+      #
       # @return   [void]
       #
       def script_phase(options)
@@ -566,15 +570,15 @@ module Pod
       # Specifies the platform for which a static library should be built.
       #
       # CocoaPods provides a default deployment target if one is not specified.
-      # The current default values are `4.3` for iOS, `10.6` for OS X, `9.0` for tvOS
-      # and `2.0` for watchOS.
+      # The current default values are `4.3` for iOS, `10.6` for OS X, `9.0` for tvOS,
+      # `1.0` for visionOS and `2.0` for watchOS.
       #
       # If the deployment target requires it (iOS < `4.3`), `armv6`
       # architecture will be added to `ARCHS`.
       #
       # @param    [Symbol] name
       #           the name of platform, can be either `:osx` for OS X, `:ios`
-      #           for iOS, `:tvos` for tvOS, or `:watchos` for watchOS.
+      #           for iOS, `:tvos` for tvOS, `:visionos` for visionOS, or `:watchos` for watchOS.
       #
       # @param    [String, Version] target
       #           The optional deployment.  If not provided a default value
@@ -870,7 +874,7 @@ module Pod
       # @example  Specifying to first use the Artsy repository and then the CocoaPods Master Repository
       #
       #           source 'https://github.com/artsy/Specs.git'
-      #           source 'https://github.com/CocoaPods/Specs.git'
+      #           source 'https://cdn.cocoapods.org/'
       #
       # @return   [void]
       #

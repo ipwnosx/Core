@@ -14,6 +14,34 @@ module Pod
             'osx' => nil,
             'ios' => nil,
             'tvos' => nil,
+            'visionos'=> nil,
+            'watchos' => nil,
+          },
+        }
+        JSON.parse(spec.to_json).should == expected
+      end
+
+      it 'serializes tags with Pod::Version correctly' do
+        spec = Specification.new(nil, 'BananaLib') do |spec|
+          spec.version = '1.0'
+          spec.version.class.should == Pod::Version
+          spec.source = {
+            :git => 'https://github.com/CocoaPods/CocoaPodsExampleLibrary.git',
+            :tag => spec.version,
+          }
+        end
+        expected = {
+          'name' => 'BananaLib',
+          'version' => '1.0',
+          'source' => {
+            'git' => 'https://github.com/CocoaPods/CocoaPodsExampleLibrary.git',
+            'tag' => '1.0',
+          },
+          'platforms' => {
+            'osx' => nil,
+            'ios' => nil,
+            'tvos' => nil,
+            'visionos'=> nil,
             'watchos' => nil,
           },
         }
@@ -53,6 +81,7 @@ module Pod
             'osx' => nil,
             'ios' => nil,
             'tvos' => nil,
+            'visionos'=> nil,
             'watchos' => nil,
           },
         }
@@ -83,11 +112,15 @@ module Pod
       end
 
       it 'maintains correct order of keys across versions' do
+        # json < 2.8.0 renders empty arrays and objects across multiple
+        # lines, newer versions render them compactly as [] / {}, so
+        # normalize empty collections before comparing.
+        normalize = ->(s) { s.gsub(/\[\s+\]/, '[]').gsub(/\{\s+\}/, '{}') }
         %w(14 15 16 17 18).each do |version|
           json = File.read(File.expand_path("../../fixtures/CannonPodder#{version}.podspec.json", __FILE__))
           loaded_spec = Specification.from_json(json)
           new_json = loaded_spec.to_pretty_json
-          new_json.should.equal json
+          normalize.call(new_json).should.equal normalize.call(json)
         end
       end
     end
@@ -410,6 +443,13 @@ module Pod
         result.test_specs.first.test_specification?.should.be.true
         result.test_specs.first.app_specification?.should.be.false
         result.test_specs.first.test_type.should.equal :unit
+      end
+
+      it 'can throws with the path for malformed json' do
+        json = '{"script_phases": [{name": "Hello World", "script": "echo \"Hello World\""}]}'
+        should.raise JSON::ParserError do
+          result = Specification.from_json(json, "path/to/spec.json")
+        end.message.should.include 'path/to/spec.json'
       end
 
       it 'can load test specification from 1.3.0 JSON format' do
